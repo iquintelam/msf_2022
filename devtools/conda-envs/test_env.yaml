@@ -13,6 +13,8 @@ dependencies:
   - pytest
   - pytest-cov
   - codecov
+  - numpy
+  - matplotlib 
 
     # Pip-only installs
   #- pip:
