@@ -1,16 +1,65 @@
 """Provide the primary functions."""
-import os
+
 import numpy as np
 import matplotlib.pyplot as plt
 
-from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 
+# type annotations type hinting
+# this discrpition in the function is usefull for ide integration
+def calculate_distance(rA: np.ndarray, rB: np.ndarray) -> float:
+    """
+    Calculate the distance between two points
 
-def calculate_distance(rA, rB):
+    Parameters
+    ----------
+    rA, rB : np.ndarray
+        The coordinates of each point.
+
+    Returns
+    -------
+    dist : float
+        The distance between two points
+
+    Examples
+    --------
+    >>>  r1 =np.array([0, 0, 0])
+    >>>  r2 =np.array([0, 0.1, 0])
+    >>>  calculate_distance(r1,r2)
+    0.1
+    """
     # This function calculates the distance between two points given as numpy arrays.
     d = rA - rB
     dist = np.linalg.norm(d)
     return dist
+
+
+def calculate_angle(rA, rB, rC, degrees=False):
+    # Calculate the angle between three points. Answer is given in radians by default, but can be given in degrees
+    # by setting degrees=True
+    AB = rB - rA
+    BC = rB - rC
+    theta = np.arccos(np.dot(AB, BC) / (np.linalg.norm(AB) * np.linalg.norm(BC)))
+
+    if degrees:
+        return np.degrees(theta)
+    else:
+        return theta
+
+
+def build_bond_list(coordinates, max_bond=1.5, min_bond=0):
+
+    # Find the bonds in a molecule (set of coordinates) based on distance criteria.
+    bonds = {}
+    num_atoms = len(coordinates)
+
+    for atom1 in range(num_atoms):
+        for atom2 in range(atom1, num_atoms):
+            distance = calculate_distance(coordinates[atom1], coordinates[atom2])
+            if distance > min_bond and distance < max_bond:
+                bonds[(atom1, atom2)] = distance
+
+    return bonds
 
 
 def open_pdb(f_loc):
@@ -19,10 +68,10 @@ def open_pdb(f_loc):
         data = f.readlines()
     c = []
     sym = []
-    for l in data:
-        if "ATOM" in l[0:6] or "HETATM" in l[0:6]:
-            sym.append(l[76:79].strip())
-            c2 = [float(x) for x in l[30:55].split()]
+    for line in data:
+        if "ATOM" in line[0:6] or "HETATM" in line[0:6]:
+            sym.append(line[76:79].strip())
+            c2 = [float(x) for x in line[30:55].split()]
             c.append(c2)
     coords = np.array(c)
     return sym, coords
@@ -113,19 +162,6 @@ def draw_molecule(coordinates, symbols, draw_bonds=None, save_location=None, dpi
     return ax
 
 
-def calculate_angle(rA, rB, rC, degrees=False):
-    # Calculate the angle between three points. Answer is given in radians by default, but can be given in degrees
-    # by setting degrees=True
-    AB = rB - rA
-    BC = rB - rC
-    theta = np.arccos(np.dot(AB, BC) / (np.linalg.norm(AB) * np.linalg.norm(BC)))
-
-    if degrees:
-        return np.degrees(theta)
-    else:
-        return theta
-
-
 def bond_histogram(bond_list, save_location=None, dpi=300, graph_min=0, graph_max=2):
     # Draw a histogram of bond lengths based on a bond_list (output from build_bond_list function)
 
@@ -150,21 +186,6 @@ def bond_histogram(bond_list, save_location=None, dpi=300, graph_min=0, graph_ma
     return ax
 
 
-def build_bond_list(coordinates, max_bond=1.5, min_bond=0):
-
-    # Find the bonds in a molecule (set of coordinates) based on distance criteria.
-    bonds = {}
-    num_atoms = len(coordinates)
-
-    for atom1 in range(num_atoms):
-        for atom2 in range(atom1, num_atoms):
-            distance = calculate_distance(coordinates[atom1], coordinates[atom2])
-            if distance > min_bond and distance < max_bond:
-                bonds[(atom1, atom2)] = distance
-
-    return bonds
-
-
 atom_colors = {
     "H": "white",
     "C": "#D3D3D3",
@@ -179,6 +200,7 @@ atom_colors = {
 
 
 def canvas(with_attribution=True):
+    # This is doc string: used to generate api documentation
     """
     Placeholder function to show example docstring (NumPy format).
 
